@@ -1,0 +1,82 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <div class="welcome-card">
+      <h1 class="welcome-title">👋 Welcome to SmartLoan</h1>
+      <p class="welcome-subtitle">Manage your loans easily with SmartLoan.</p>
+      <%= link_to "➕ Apply for New Loan", new_loan_path, class: "apply-loan-button" %>
+    </div>
+  </div>
+
+  <div class="loan-table-section">
+    <h2 class="loan-table-title">📋 Your Loan History</h2>
+    <table class="loan-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Amount</th>
+          <th>Duration</th>
+          <th>Status</th>
+          <th>Credit Score</th>
+          <th>Risk Level</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @loans.each do |loan| %>
+          <tr>
+            <td><%= loan.id %></td>
+            <td><%= number_to_currency(loan.amount, unit: "₹") %></td>
+            <td><%= loan.duration %> months</td>
+            <td class="status <%= loan.display_status.downcase %>">
+              <%= loan.display_status.capitalize %>
+              <% if loan.status == 'repaid' && loan.repaid_at %>
+                <br><small>✅ Repaid on <%= loan.repaid_at.strftime('%Y-%m-%d') %></small>
+              <% end %>
+            </td>
+            <td><%= loan.credit_score.nil? ? 'Not Available' : loan.credit_score %></td>
+<td>
+  <% case loan.risk_level %>
+  <% when 'Low' %>
+    <span class="badge bg-success">Low</span>
+  <% when 'Medium' %>
+    <span class="badge bg-warning text-dark">Medium</span>
+  <% when 'High' %>
+    <span class="badge bg-danger">High</span>
+  <% else %>
+    <span class="badge bg-secondary">Risk Unknown</span>
+  <% end %>
+</td>
+
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+
+<!--<script>
+function fetchLoans() {
+  fetch('/loans.json')  // Rails will respond with JSON
+    .then(response => response.json())
+    .then(data => {
+      const tableBody = document.getElementById('loans-table-body');
+      tableBody.innerHTML = ''; // Clear previous rows
+
+      data.forEach(loan => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${loan.id}</td>
+          <td>${loan.amount}</td>
+          <td>${loan.duration}</td>
+          <td>${loan.status}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching loans:', error);
+    });
+}
+</script>
+-->

@@ -1,0 +1,29 @@
+<h2>Loan Details</h2>
+
+<p><strong>Amount:</strong> <%= @loan.amount %></p>
+<p><strong>Interest Rate:</strong> <%= @loan.interest_rate %> %</p>
+<p><strong>Status:</strong> <%= @loan.status %></p>
+<p><strong>Remaining Balance:</strong> <%= @loan.remaining_balance %></p>
+
+<% if @loan.status == 'approved' || @loan.status == 'active' %>
+  <%= link_to 'Make a Repayment', new_loan_repayment_path(@loan), class: 'btn btn-primary' %>
+<% end %>
+
+<h3>Repayment History</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Paid At</th>
+      <th>Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @loan.repayments.each do |repayment| %>
+      <tr>
+        <td><%= repayment.paid_at.strftime("%d-%m-%Y") %></td>
+        <td><%= repayment.amount %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

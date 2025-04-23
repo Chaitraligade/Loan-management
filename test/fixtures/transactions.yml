@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  loan: one
+  tx_hash: MyString
+  action: MyString
+  status: MyString
+  error_message: MyText
+
+two:
+  user: two
+  loan: two
+  tx_hash: MyString
+  action: MyString
+  status: MyString
+  error_message: MyText

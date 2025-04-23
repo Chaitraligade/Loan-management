@@ -1,0 +1,101 @@
+.dashboard {
+    padding: 2rem;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f9fafb;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  
+  .welcome-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+  }
+  
+  .welcome-title {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .welcome-subtitle {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 1.2rem;
+  }
+  
+  .apply-loan-button {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+  }
+  
+  .apply-loan-button:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .loan-table-section {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  }
+  
+  .loan-table-title {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #111827;
+  }
+  
+  .loan-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .loan-table th, .loan-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .loan-table th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+  }
+  
+  .loan-table tbody tr:hover {
+    background-color: #f9fafb;
+  }
+  
+  .status {
+    font-weight: 600;
+  }
+  
+  .status.approved {
+    color: #10b981;
+  }
+  
+  .status.pending {
+    color: #f59e0b;
+  }
+  
+  .status.rejected {
+    color: #ef4444;
+  }
+  
+  .status.repaid {
+    color: #3b82f6;
+  }
+  

@@ -1,0 +1,85 @@
+<!-- app/views/repayments/new.html.erb -->
+
+<h1>Make a Repayment for Loan: <%= @loan.id %></h1>
+
+<%= form_with model: [@loan, @repayment], local: true do |form| %>
+  <% if @repayment.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@repayment.errors.count, "error") %> prohibited this repayment from being saved:</h2>
+      <ul>
+        <% @repayment.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :amount %>
+    <%= form.number_field :amount, step: "any" %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit "Make Repayment" %>
+  </div>
+<% end %>
+
+
+<!-- Stripe -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const stripe = Stripe("pk_test_YOUR_PUBLIC_KEY"); // replace this!
+    const elements = stripe.elements();
+    const card = elements.create("card");
+    card.mount("#card-element");
+
+    document.getElementById("repay-button").addEventListener("click", async () => {
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (!amount || amount <= 0) {
+        document.getElementById("payment-status").innerText = "Enter a valid amount.";
+        return;
+      }
+
+      const query = `
+        mutation {
+          createPaymentIntent(amount: ${amount}) {
+            client_secret
+            success
+            errors
+          }
+        }
+      `;
+
+      const response = await fetch("/graphql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({ query })
+      });
+
+      const result = await response.json();
+      const clientSecret = result.data.createPaymentIntent.client_secret;
+
+      if (!clientSecret) {
+        document.getElementById("payment-status").innerText = "Error: " + result.data.createPaymentIntent.errors.join(", ");
+        return;
+      }
+
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: card
+        }
+      });
+
+      if (error) {
+        document.getElementById("payment-status").innerHTML = `<p class="text-danger">Payment failed: ${error.message}</p>`;
+      } else if (paymentIntent.status === "succeeded") {
+        document.getElementById("payment-status").innerHTML = `<p class="text-success">Payment successful! 🎉</p>`;
+        // Optional: redirect or update backend
+      }
+    });
+  });
+</script>

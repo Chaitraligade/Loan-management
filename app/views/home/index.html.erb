@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SmartLoan Home</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Navigation Bar */
+    .navbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+
+    .navbar a {
+      color: #fff;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 10px 18px;
+      border: 2px solid #fff;
+      border-radius: 6px;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .navbar a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .flash {
+      margin-top: 80px;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+
+    .flash.notice {
+      background-color: rgba(0, 255, 0, 0.2);
+      color: #0f0;
+    }
+
+    .flash.alert {
+      background-color: rgba(255, 0, 0, 0.2);
+      color: #f00;
+    }
+
+    .container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      margin-top: 60px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.3rem;
+      margin-bottom: 30px;
+    }
+
+    .features {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .feature {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 20px;
+      flex: 1 1 250px;
+      max-width: 250px;
+    }
+
+    .feature h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .feature p {
+      font-size: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="navbar">
+    <% if user_signed_in? %>
+      <%= link_to "Dashboard", loans_path %>
+      <%= link_to "Logout", destroy_user_session_path, method: :delete, data: { confirm: "Are you sure you want to logout?" } %>
+    <% else %>
+      <%= link_to "Login", new_user_session_path %>
+      <%= link_to "Sign up", new_user_registration_path %>
+    <% end %>
+  </div>
+
+  <!-- Flash Messages -->
+  <% flash.each do |key, message| %>
+    <div class="flash <%= key %>"><%= message %></div>
+  <% end %>
+
+  <!-- Main Content -->
+  <div class="container">
+    <% if user_signed_in? %>
+      <h1>Welcome, <%= current_user.email %>!</h1>
+      <p>Manage your loans easily with SmartLoan.</p>
+      <%= link_to "➕ Apply for New Loan", new_loan_path, class: "button" %>
+    <% else %>
+      <h1>Welcome to SmartLoan</h1>
+      <p>A smarter way to manage your loans with simplicity and security.</p>
+
+      <div class="features">
+        <div class="feature">
+          <h3>Fast Processing</h3>
+          <p>Receive instant decisions on your applications.</p>
+        </div>
+        <div class="feature">
+          <h3>Secure & Transparent</h3>
+          <p>Blockchain-based verification for complete transparency.</p>
+        </div>
+        <div class="feature">
+          <h3>User Friendly</h3>
+          <p>Simple dashboard to track and manage your loans.</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    © 2025 SmartLoan. All rights reserved.
+  </footer>
+</body>
+</html>

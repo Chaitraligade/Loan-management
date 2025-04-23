@@ -1,0 +1,24 @@
+});
+  value: ethers.parseEther("10")
+  to: "0x9871Ada2c9b4370D2d554b49299E01B5216C97A8",
+await funder.sendTransaction({
+});
+  value: ethers.parseEther("10")  // ✅ this works in Hardhat >= 2.17
+  to: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+await funder.sendTransaction({
+const [funder] = await ethers.getSigners();
+});
+  value: ethers.utils.parseEther("10")              // 10 ETH
+  to: "0x5FbDB2315678afecb367f032d93F642f64180aa3",  // your sender address
+await funder.sendTransaction({
+const [funder] = await hre.ethers.getSigners();
+const ethers = require("ethers");
+ethers.utils.parseEther("10")
+});
+  value: ethers.utils.parseEther("10")               // send 10 ETH (plenty for testing)
+  to: "0x5FbDB2315678afecb367f032d93F642f64180aa3",  // replace with your sender address
+await funder.sendTransaction({
+// Step 2: Send ETH to your sender wallet (this is the address your Rails app is using)
+const [funder] = await ethers.getSigners();
+// Step 1: Get the default Hardhat account (funded with ETH)
+await ethers.provider.getNetwork()

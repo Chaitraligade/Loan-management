@@ -1,0 +1,25 @@
+<!-- app/views/institutions/index.html.erb -->
+<h1>Institutions</h1>
+
+<%= link_to 'New Institution', new_institution_path, class: 'btn btn-primary' %>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @institutions.each do |institution| %>
+      <tr>
+        <td><%= institution.name %></td>
+        <td>
+          <%= link_to 'Show', institution_path(institution), class: 'btn btn-info' %>
+          <%= link_to 'Edit', edit_institution_path(institution), class: 'btn btn-warning' %>
+          <%= link_to 'Delete', institution_path(institution), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

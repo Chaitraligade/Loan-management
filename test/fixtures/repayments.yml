@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  loan: one
+  amount: 9.99
+  paid_at: 2025-04-17 17:45:04
+
+two:
+  loan: two
+  amount: 9.99
+  paid_at: 2025-04-17 17:45:04

@@ -1,0 +1,23 @@
+<h1>New Institution</h1>
+
+<%= form_with model: @institution, local: true do |form| %>
+  <% if @institution.errors.any? %>
+    <div class="error_explanation">
+      <h2><%= pluralize(@institution.errors.count, "error") %> prohibited this institution from being saved:</h2>
+      <ul>
+        <% @institution.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :name %>
+    <%= form.text_field :name %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit "Create Institution" %>
+  </div>
+<% end %>
