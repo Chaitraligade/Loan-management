@@ -23,6 +23,7 @@ exports.HARDHAT_NETWORK_SUPPORTED_HARDFORKS = [
     "merge",
     "shanghai",
     "cancun",
+    "prague",
 ];
 exports.HARDHAT_MEMPOOL_SUPPORTED_ORDERS = ["fifo", "priority"];
 exports.ARTIFACT_FORMAT_VERSION = "hh-sol-artifact-1";

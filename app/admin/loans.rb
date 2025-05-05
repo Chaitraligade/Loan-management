@@ -4,7 +4,7 @@ ActiveAdmin.register Loan do
   index do
     id_column
     column :amount
-    column :due_date
+    # column :due_date
     column :status
     column :user do |loan|
       loan.user.present? ? loan.user.email : "No user"
@@ -18,7 +18,7 @@ ActiveAdmin.register Loan do
   show do
     attributes_table do
       row :amount
-      row :due_date
+      # row :due_date
       row :status
       row("Approved?") { |loan| loan.status == 'approved' ? "Yes" : "No" }
       row :user
@@ -31,9 +31,9 @@ ActiveAdmin.register Loan do
   form do |f|
     f.inputs do
       f.input :amount, input_html: { min: 0.01 }
-      f.input :due_date, as: :datepicker
+      # f.input :due_date, as: :datepicker
       f.input :status, as: :select, collection: Loan.statuses.keys
-      f.input :user
+      # f.input :user
       f.input :institution, as: :select, collection: Institution.all.collect { |i| [i.name, i.id] }
     end
     f.actions

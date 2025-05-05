@@ -1,62 +1,79 @@
-# app/services/blockchain/loan_contract_service.rb
+require 'eth'
+require 'json'
 
 module Blockchain
   class LoanContractService
     def initialize
-      @contract_address = "0x5FbDB2315678afecb367f032d93F642f64180aa3" # Replace with your actual deployed address
-      @abi = JSON.parse(File.read(Rails.root.join("app", "blockchain", "artifacts", "contracts", "LoanContract.sol", "LoanContract.json")))["abi"]
+      @key = Eth::Key.new(priv: ENV['ETH_PRIVATE_KEY'])
       @client = Eth::Client.create("http://localhost:8545")
-      @key = Eth::Key.new priv: ENV["PRIVATE_KEY"] || "0x59c6995e998f97a5a0044966f094538c5f27a8e9be0df61e6f7b67458dfd7e16"
-      @contract = Eth::Contract.from_abi(name: "LoanContract", address: @contract_address, abi: @abi)
+
+      @contract_address = ENV['LOAN_CONTRACT_ADDRESS']
+      # abi_path = Rails.root.join("app/blockchain/LoanContract.abi")
+      # abi = JSON.parse(File.read(abi_path))
+      @contract = Eth::Contract.from_abi(name: "LoanContract", address: @contract_address, abi: abi)
     end
 
-    def get_loan_details(loan_id)
-      # Assuming you have a method that calls the smart contract
-      # Replace this with actual interaction with the blockchain
-      contract = self.client.contract
-      details = contract.call("getLoanDetails", loan_id)
-  
-      return details if details.present?
-      nil
-    rescue => e
-      Rails.logger.error("Blockchain error: #{e.message}")
-      nil
-    end
-    def borrower
-      @client.call(@contract, "borrower")
+    def get_loan_details(contract_address)
+      contract_address = contract_address.to_i
+      result = @contract.call.getLoanDetails(contract_address)
+
+      {
+        borrower: result[0],
+        amount: result[1],
+        approved: result[2]
+      }
     end
 
-    def amount
-      @client.call(@contract, "amount")
+    def request_loan(borrower_address, amount)
+      amount = amount.to_i
+      Rails.logger.debug("📨 Requesting loan on-chain for borrower=#{borrower_address}, amount=#{amount}")
+
+      data = @contract.transact.requestLoan(borrower_address, amount).data
+      send_transaction(data)
     end
 
-    def create_loan(user, loan)
-      tx = Transaction.create!(user: user, loan: loan, action: "create_loan", status: "pending")
-    
-      begin
-        result = @contract.send_transaction.createLoan(loan.amount, loan.due_date.to_i)
+    def approve_loan(contract_address)
+      contract_address = contract_address.to_i
+      Rails.logger.debug("✅ Approving loan ID #{contract_address} on-chain")
 
-        tx.update!(tx_hash: result.id, status: "success")
-      rescue => e
-        tx.update!(status: "failed", error_message: e.message)
-        raise
+      data = @contract.transact.approveLoan(contract_address).data
+      send_transaction(data)
+    end
+
+    def record_loan(borrower_address, amount)
+      request_loan(borrower_address, amount.to_i)
+    end
+
+    private
+
+    def send_transaction(data)
+      nonce = @client.get_nonce(@key.address)
+      gas_price = @client.eth_gas_price["result"].to_i(16)
+      chain_id = @client.eth_chain_id["result"].to_i(16)
+
+      tx = Eth::Tx.new(
+        nonce: nonce,
+        gas_price: gas_price,
+        gas_limit: 300_000,
+        to: @contract.address,
+        value: 0,
+        data: data,
+        chain_id: chain_id
+      )
+
+      tx.sign(@key)
+      raw_tx = tx.hex
+      Rails.logger.debug("📦 Sending raw transaction: #{raw_tx}")
+
+      result = @client.eth_send_raw_transaction(raw_tx)
+      if result["error"]
+        Rails.logger.error("❌ RPC Error: #{result["error"]["message"]}")
+        raise "Blockchain RPC Error: #{result["error"]["message"]}"
       end
-    end
-    
-    def repay_loan(user, loan)
-      tx = Transaction.create!(user: user, loan: loan, action: "repay", status: "pending")
-    
-      begin
-        result = @contract.transact.from(user.eth_address).repayLoan(loan.id)
-        tx.update!(tx_hash: result.id, status: "success")
-      rescue => e
-        tx.update!(status: "failed", error_message: e.message)
-        raise
-      end
-    end
-    
-    def approve_loan(user_eth_address, loan_id)
-      @contract.transact.from(user_eth_address).approveLoan(loan_id)
+
+      tx_hash = result["result"]
+      Rails.logger.info("✅ Transaction hash: #{tx_hash}")
+      tx_hash
     end
   end
 end

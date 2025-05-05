@@ -3,80 +3,65 @@
     <div class="welcome-card">
       <h1 class="welcome-title">👋 Welcome to SmartLoan</h1>
       <p class="welcome-subtitle">Manage your loans easily with SmartLoan.</p>
-      <%= link_to "➕ Apply for New Loan", new_loan_path, class: "apply-loan-button" %>
+      <%= link_to "➕ Apply for New Loan", new_loan_path, class: "apply-loan-button btn btn-primary" %>
     </div>
   </div>
 
-  <div class="loan-table-section">
-    <h2 class="loan-table-title">📋 Your Loan History</h2>
-    <table class="loan-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Amount</th>
-          <th>Duration</th>
-          <th>Status</th>
-          <th>Credit Score</th>
-          <th>Risk Level</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @loans.each do |loan| %>
+  <% if flash[:alert] %>
+    <div class="alert alert-danger mt-3">
+      <%= flash[:alert] %>
+    </div>
+  <% end %>
+
+  <% if @loans.empty? %>
+    <p class="mt-4">You don’t have any loans yet. Apply for one above ⬆️</p>
+  <% else %>
+    <div class="loan-table-section mt-5">
+      <h2 class="loan-table-title">📋 Your Loan History</h2>
+      <table class="loan-table table table-striped table-hover">
+        <thead>
           <tr>
-            <td><%= loan.id %></td>
+            <th>ID</th>
+            <th>Amount</th>
+            <th>Duration(months)</th>
+            <th>Status</th>
+            <th>Credit Score</th>
+            <th>Risk Level</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+         <% @loans.each do |loan| %>
+          <tr>
+            <td><%= loan.user_loan_id %>
+</td>
             <td><%= number_to_currency(loan.amount, unit: "₹") %></td>
-            <td><%= loan.duration %> months</td>
-            <td class="status <%= loan.display_status.downcase %>">
-              <%= loan.display_status.capitalize %>
-              <% if loan.status == 'repaid' && loan.repaid_at %>
-                <br><small>✅ Repaid on <%= loan.repaid_at.strftime('%Y-%m-%d') %></small>
+            <td><%= loan.duration %></td>
+            <td>
+              <% if loan.status == 'approved' %>
+                <span class="text-success fw-bold">Approved</span>
+              <% elsif loan.status == 'repaid' %>
+                <span class="text-primary fw-bold">Repaid</span><br>
+                <span class="text-success">✅ Repaid on <%= loan.repaid_at.to_date %></span>
+              <% else %>
+                <span class="text-danger fw-bold">Rejected</span>
               <% end %>
             </td>
-            <td><%= loan.credit_score.nil? ? 'Not Available' : loan.credit_score %></td>
-<td>
-  <% case loan.risk_level %>
-  <% when 'Low' %>
-    <span class="badge bg-success">Low</span>
-  <% when 'Medium' %>
-    <span class="badge bg-warning text-dark">Medium</span>
-  <% when 'High' %>
-    <span class="badge bg-danger">High</span>
-  <% else %>
-    <span class="badge bg-secondary">Risk Unknown</span>
+            <td><%= loan.credit_score %></td>
+            <td><%= loan.risk_level %></td>
+            <td class="text-center">
+              <% if loan.status == 'approved' %>
+                <%= button_to '💸 Pay Now', pay_loan_path(loan), method: :post, class: 'btn btn-success btn-sm px-3 shadow-sm rounded-pill' %>
+              <% elsif loan.status == 'repaid' %>
+                <span class="badge bg-secondary">Paid</span>
+              <% else %>
+                <span class="text-muted">—</span>
+              <% end %>
+            </td>
+          </tr>
+         <% end %>
+        </tbody>
+      </table>
+    </div>
   <% end %>
-</td>
-
-        <% end %>
-      </tbody>
-    </table>
-  </div>
 </div>
-
-
-
-
-<!--<script>
-function fetchLoans() {
-  fetch('/loans.json')  // Rails will respond with JSON
-    .then(response => response.json())
-    .then(data => {
-      const tableBody = document.getElementById('loans-table-body');
-      tableBody.innerHTML = ''; // Clear previous rows
-
-      data.forEach(loan => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${loan.id}</td>
-          <td>${loan.amount}</td>
-          <td>${loan.duration}</td>
-          <td>${loan.status}</td>
-        `;
-        tableBody.appendChild(row);
-      });
-    })
-    .catch(error => {
-      console.error('Error fetching loans:', error);
-    });
-}
-</script>
--->

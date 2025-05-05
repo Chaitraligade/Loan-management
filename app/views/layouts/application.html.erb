@@ -20,6 +20,15 @@
   <%# <%= link_to 'Login', new_user_session_path %> 
   <%# <%= link_to 'Sign up', new_user_registration_path %> 
 <% end %>
+<% if notice %>
+  <div class="alert alert-success"><%= notice %></div>
+<% elsif alert %>
+  <div class="alert alert-danger"><%= alert %></div>
+<% end %>
+<!-- app/views/layouts/application.html.erb -->
+<nav class="navbar">
+  <!-- Other nav content -->
+</nav>
 
     <%= yield %>
   </body>

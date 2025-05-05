@@ -99,4 +99,19 @@
     color: #3b82f6;
   }
   
-  
+  .card {
+  border-radius: 1.25rem;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.btn-lg {
+  font-size: 1.1rem;
+}
+
+.btn-outline-success {
+  border-width: 2px;
+}
+

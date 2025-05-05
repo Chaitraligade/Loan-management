@@ -1,25 +1,25 @@
-<%= form_with(model: @loan, local: true) do |form| %>
-
+<%= form_with(model: @loan, local: true) do |f| %>
   <div class="form-group">
-    <%= form.label :institution_id, "Institution" %>
-    <%= form.collection_select :institution_id, Institution.all, :id, :name, prompt: "Select Institution", class: "form-control" %>
+    <%= f.number_field :amount, class: "input", placeholder: "Loan Amount" %>
   </div>
 
   <div class="form-group">
-    <%= form.label :loan_amount %>
-    <%= form.number_field :loan_amount, step: 0.01, class: "form-control" %>
+    <%= f.date_field :due_date, class: "input", placeholder: "Due Date" %>
   </div>
 
   <div class="form-group">
-    <%= form.label :interest_rate %>
-    <%= form.number_field :interest_rate, step: 0.01, class: "form-control" %>
+    <%= f.number_field :monthly_income, class: "input", placeholder: "Monthly Income" %>
   </div>
 
   <div class="form-group">
-    <%= form.label :loan_term, "Loan Term (months)" %>
-    <%= form.number_field :loan_term, class: "form-control" %>
+    <%= f.number_field :duration, class: "input", placeholder: "Loan Duration" %>
   </div>
 
-  <%= form.submit class: "btn btn-primary" %>
+  <div class="form-group">
+    <%= f.select :institution_id, Institution.all.collect { |i| [i.name, i.id] }, { prompt: "Select Institution" }, class: "input" %>
+  </div>
 
+  <div class="submit-button">
+    <%= f.submit "Create Loan", class: "btn-primary" %>
+  </div>
 <% end %>

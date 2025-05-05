@@ -1,136 +1,91 @@
 require 'eth'
+require 'json'
 
 module Blockchain
   class LoanContractService
     def initialize
       @key = Eth::Key.new(priv: ENV['ETH_PRIVATE_KEY'])
       @client = Eth::Client.create("http://localhost:8545")
-    
+
       @contract_address = ENV['LOAN_CONTRACT_ADDRESS']
-    
       abi_path = Rails.root.join("app/blockchain/LoanContract.abi")
-      abi = JSON.parse(File.read(abi_path))  # Read as a raw JSON string
-      @contract = Eth::Contract.from_abi(name: "LoanContract", address: @contract_address, abi: abi["abi"])
-      
+      abi = JSON.parse(File.read(abi_path))
+      @contract = Eth::Contract.from_abi(name: "LoanContract", address: @contract_address, abi: abi)
     end
-    
-    def record_loan(loan)
-      function = @contract.abi.find { |f| f["name"] == "disburseLoan" && f["type"] == "function" }
-      raise "Function 'disburseLoan' not found in ABI" unless function
-    
-      data = Eth::Abi.encode(
-        ['uint256', 'uint256', 'uint256', 'string'],
-        [loan.id, loan.user_id, loan.amount.to_i, loan.status]
-      )
-    
+
+    def get_loan_details(contract_address)
+      contract_address = contract_address.to_i
+      result = @contract.call.getLoanDetails(contract_address)
+
+      {
+        borrower: result[0],
+        amount: result[1],
+        approved: result[2]
+      }
+    end
+
+    def request_loan(borrower_address, amount)
+      amount = amount.to_i
+      Rails.logger.debug("📨 Requesting loan on-chain for borrower=#{borrower_address}, amount=#{amount}")
+
+      data = @contract.transact.requestLoan(borrower_address, amount).data
+      send_transaction(data)
+    end
+
+    def approve_loan(contract_address)
+      contract_address = contract_address.to_i
+      Rails.logger.debug("✅ Approving loan ID #{contract_address} on-chain")
+
+      data = @contract.transact.approveLoan(contract_address).data
+      send_transaction(data)
+    end
+
+    def record_loan(borrower_address, amount)
+      request_loan(borrower_address, amount.to_i)
+    end
+
+    # Inside BlockchainService
+def self.create_loan_contract(loan, credit_score)
+  contract_data = {
+    amount: loan.amount,
+    credit_score: credit_score.to_s,  # Ensure it's a string if expected by the contract
+    risk_level: loan.risk_level,
+    due_date: loan.due_date.to_s,  # Example of date formatting
+    # More fields here...
+  }
+  blockchain_connection.create_contract(contract_data)
+end
+
+    private
+
+    def send_transaction(data)
       nonce = @client.get_nonce(@key.address)
       gas_price = @client.eth_gas_price["result"].to_i(16)
-      chain_id = @client.eth_chain_id["result"].to_i(16)  # ✅ dynamically fetch
-    
-      tx = Eth::Tx.new({
+      chain_id = @client.eth_chain_id["result"].to_i(16)
+
+      tx = Eth::Tx.new(
         nonce: nonce,
         gas_price: gas_price,
-        gas_limit: 3_000_000,
+        gas_limit: 300_000,
         to: @contract.address,
         value: 0,
         data: data,
         chain_id: chain_id
-      })
-    
-      tx.sign(@key)
-      tx_hash = @client.eth_send_raw_transaction(tx.hex)["result"]  # ✅ no "0x" prefix
-    
-      puts "✅ Loan recorded on blockchain: #{tx_hash}"
-      tx_hash
-    rescue => e
-      Rails.logger.error("record_loan failed: #{e.message}")
-      raise
-    end
-    
-
-    def get_loan_details(loan_id)
-      @client.call(@contract, "getLoanDetails", loan_id)
-    rescue => e
-      Rails.logger.error("get_loan_details failed: #{e.message}")
-      nil
-    end
-
-    def get_loan_amount(loan_id)
-      details = get_loan_details(loan_id)
-      details ? details[1] : nil
-    end
-
-    def approved?(loan_id)
-      details = get_loan_details(loan_id)
-      details ? details[2] : nil
-    end
-
-    def request_loan(borrower_address, amount)
-      key = Eth::Key.new priv: ENV['BLOCKCHAIN_PRIVATE_KEY']
-      sender_address = key.address
-      client = Eth::Client.create("http://localhost:8545")
-
-      abi = JSON.parse(File.read(Rails.root.join("app", "blockchain", "LoanContractABI.json")))
-      contract_address = ENV['LOAN_CONTRACT_ADDRESS']
-
-      function = abi.find { |f| f["name"] == "requestLoan" && f["type"] == "function" }
-      raise "Function not found in ABI" unless function
-
-      encoder = Eth::Abi::Encoder.new(function)
-      data = encoder.encode(borrower_address, amount.to_i)
-
-      nonce = client.get_nonce(sender_address)
-      gas_price = client.gas_price
-      tx = Eth::Tx.new({
-        nonce: nonce,
-        gas_price: gas_price,
-        gas_limit: 300_000,
-        to: contract_address,
-        value: 0,
-        data: data
-      })
-
-      tx.sign key
-      tx_hash = client.send_raw_transaction(tx.hex)
-      puts "✅ Loan transaction sent with hash: #{tx_hash}"
-
-      return tx_hash
-    rescue => e
-      puts "🔥 Blockchain error in request_loan: #{e.message}"
-      raise e
-    end
-
-    def approve_loan(loan_id)
-      loan_id_hex = loan_id.to_i.to_s(16).rjust(64, '0')
-
-      selector = Digest::Keccak.hexdigest(256, "approveLoan(uint256)")[0..7]
-      data = "0x#{selector}#{loan_id_hex}"
-
-      tx = Eth::Tx.new({
-        data: data,
-        gas_limit: 100_000,
-        gas_price: 20_000_000_000,
-        nonce: @client.get_nonce(@key.address),
-        to: @contract.address,
-        value: 0
-      })
+      )
 
       tx.sign(@key)
-      tx_hash = @client.send_raw_transaction(tx.hex)
-      Rails.logger.info("Loan approved, tx hash: #{tx_hash}")
+      raw_tx = tx.hex
+      Rails.logger.debug("📦 Sending raw transaction: #{raw_tx}")
+
+      result = @client.eth_send_raw_transaction(raw_tx)
+      if result["error"]
+        Rails.logger.error("❌ RPC Error: #{result["error"]["message"]}")
+        raise "Blockchain RPC Error: #{result["error"]["message"]}"
+      end
+
+      tx_hash = result["result"]
+      Rails.logger.info("✅ Transaction hash: #{tx_hash}")
       tx_hash
-    rescue => e
-      Rails.logger.error("Blockchain error in approve_loan: #{e.message}")
-      raise
-    end
-
-    def contract
-      @contract
-    end
-
-    def client
-      @client
     end
   end
 end
-

@@ -76,4 +76,5 @@ end
 # Gemfile
 
 gem 'sassc-rails'
-gem 'httparty'
+
+gem "rspec-rails", "~> 7.1"

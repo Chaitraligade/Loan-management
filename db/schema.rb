@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_04_23_054405) do
+ActiveRecord::Schema[7.1].define(version: 2025_05_02_063941) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -43,6 +43,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_23_054405) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "contract_address"
   end
 
   create_table "loan_products", force: :cascade do |t|
@@ -64,13 +65,27 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_23_054405) do
     t.datetime "updated_at", null: false
     t.date "due_date"
     t.integer "duration"
-    t.decimal "interest_rate"
     t.datetime "repaid_at"
     t.integer "credit_score"
     t.string "risk_level"
-    t.bigint "institution_id"
+    t.string "contract_address"
+    t.integer "monthly_income"
+    t.bigint "institution_id", null: false
+    t.string "purpose"
+    t.string "employment_status"
+    t.string "employer_name"
+    t.integer "user_loan_id"
     t.index ["institution_id"], name: "index_loans_on_institution_id"
     t.index ["user_id"], name: "index_loans_on_user_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "message"
+    t.boolean "read"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "repayments", force: :cascade do |t|
@@ -80,6 +95,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_23_054405) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.integer "status"
     t.index ["loan_id"], name: "index_repayments_on_loan_id"
     t.index ["user_id"], name: "index_repayments_on_user_id"
   end
@@ -112,12 +128,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_04_23_054405) do
     t.integer "monthly_income"
     t.integer "role"
     t.bigint "institution_id"
+    t.string "name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["institution_id"], name: "index_users_on_institution_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "loan_products", "institutions"
+  add_foreign_key "loans", "institutions"
   add_foreign_key "loans", "users"
+  add_foreign_key "notifications", "users"
   add_foreign_key "repayments", "loans"
   add_foreign_key "repayments", "users"
   add_foreign_key "transactions", "loans"

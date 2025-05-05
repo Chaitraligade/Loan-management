@@ -1,13 +1,17 @@
+const { ethers } = require("hardhat");
+
 async function main() {
-  const [lender, borrower] = await ethers.getSigners();
+    const [deployer] = await ethers.getSigners();
+    console.log("Deploying contracts with account:", deployer.address);
 
-  const LoanContract = await ethers.getContractFactory("LoanContract");
-  const loanContract = await LoanContract.deploy(borrower.address, ethers.utils.parseEther("1.0"));
+    const LoanContract = await ethers.getContractFactory("LoanContract");
+    const loanContract = await LoanContract.deploy();
 
-  console.log("LoanContract deployed to:", loanContract.address);
+    // Use `.target` instead of `.address`
+    console.log("LoanContract deployed to:", loanContract.target);
 }
 
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+    console.error(error);
+    process.exit(1);
 });
